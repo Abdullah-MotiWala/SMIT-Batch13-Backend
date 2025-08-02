@@ -8,11 +8,29 @@ const HOST = "127.0.0.1";
 
 let USERs = [];
 
+// const bodyParser = {
+//   json: () => {
+//     return (req, res, next) => {
+//       let userdata = "";
+//       req.on("data", (chunk) => {
+//         const stringedBuffer = chunk.toString();
+//         userdata += stringedBuffer;
+//       });
+//       req.on("end", () => {
+//         userdata = JSON.parse(userdata);
+//         req.abc = userdata;
+//         next();
+//       });
+//     };
+//   },
+// };
+
 app.get("/", (req, res) => {
   res.send("Working...");
 });
 
 app.post("/user", bodyParser.json(), (req, res) => {
+  console.log(req.abc, "===abc");
   const id = Date.now();
   const user = {
     ...req.body,
@@ -21,6 +39,7 @@ app.post("/user", bodyParser.json(), (req, res) => {
   USERs.push(user);
   res.status(201).json({ data: user });
 });
+
 app.get("/user", (req, res) => {
   res.status(200).json({ data: USERs });
 });
