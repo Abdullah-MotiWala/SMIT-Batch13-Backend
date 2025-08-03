@@ -2,7 +2,9 @@
   "name": "batch-13-be",
   "version": "1.0.0",
   "main": "index.js",
+  "type":"commonjs",
   "scripts": {
+    "start:dev": "node --watch index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -11,7 +13,8 @@
   "description": "",
   "dependencies": {
     "body-parser": "^2.2.0",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "mongodb": "^6.18.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

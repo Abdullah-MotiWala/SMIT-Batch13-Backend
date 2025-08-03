@@ -1,12 +1,11 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const { connectDB, getDB } = require("./db");
 
 const app = express();
 
 const PORT = 5000;
 const HOST = "127.0.0.1";
-
-let USERs = [];
 
 // const bodyParser = {
 //   json: () => {
@@ -26,22 +25,37 @@ let USERs = [];
 // };
 
 app.get("/", (req, res) => {
-  res.send("Working...");
+  res.send("Working fine");
 });
 
-app.post("/user", bodyParser.json(), (req, res) => {
-  console.log(req.abc, "===abc");
-  const id = Date.now();
-  const user = {
-    ...req.body,
-    id,
-  };
-  USERs.push(user);
-  res.status(201).json({ data: user });
+app.post("/user", bodyParser.json(), async (req, res) => {
+  try {
+    const user = {
+      ...req.body,
+    };
+    const db = await getDB();
+    await db.collection("user").insertOne(user);
+    res.status(201).json({ data: user });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
-app.get("/user", (req, res) => {
-  res.status(200).json({ data: USERs });
+app.get("/user", async (req, res) => {
+  const db = await getDB();
+  const page = 1;
+  const limit = 100;
+
+  const offset = (page - 1) * limit;
+  const data = await db
+    .collection("user")
+    .find({ name: "Ali" })
+    .limit(limit)
+    .skip(offset)
+    .toArray();
+
+  res.status(200).json({ data });
 });
 app.get("/user/:id", (req, res) => {
   const { id } = req.params;
@@ -65,10 +79,14 @@ app.put("/user/:id", bodyParser.json(), (req, res) => {
   newUsers.push(updatedUser);
 
   USERs = newUsers;
-
   res.status(200).json({ data: updatedUser });
 });
 
-app.listen(PORT, HOST, () => {
-  console.log(`app is running on ${HOST}:${PORT}`);
-});
+const startServer = async () => {
+  await connectDB();
+  app.listen(PORT, HOST, () => {
+    console.log(`app is running on , and ${HOST}:${PORT}`);
+  });
+};
+
+startServer();
