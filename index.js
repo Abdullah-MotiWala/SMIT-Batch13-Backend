@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const { connectDB, getDB } = require("./db");
+const { ObjectId } = require("mongodb");
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.post("/user", bodyParser.json(), async (req, res) => {
     };
     const db = await getDB();
     await db.collection("user").insertOne(user);
+    // insertMany
     res.status(201).json({ data: user });
   } catch (err) {
     console.log(err);
@@ -50,36 +52,46 @@ app.get("/user", async (req, res) => {
   const offset = (page - 1) * limit;
   const data = await db
     .collection("user")
-    .find({ name: "Ali" })
+    .find()
     .limit(limit)
     .skip(offset)
     .toArray();
 
   res.status(200).json({ data });
 });
-app.get("/user/:id", (req, res) => {
+app.get("/user/:id", async (req, res) => {
   const { id } = req.params;
-  const user = USERs.find((u) => u.id == id);
-  res.status(200).json({ data: user });
+  const userObjectId = new ObjectId(id);
+  const db = await getDB();
+  const condition = { _id: userObjectId };
+  const data = await db.collection("user").findOne(condition);
+  res.status(200).json({ data });
 });
-app.delete("/user/:id", (req, res) => {
+app.delete("/user/:id", async (req, res) => {
   const { id } = req.params;
-  const newUsers = USERs.filter((u) => u.id != id);
-  USERs = newUsers;
+  const userObjectId = new ObjectId(id);
+  const db = await getDB();
+  const condition = { _id: userObjectId };
+  await db.collection("user").deleteOne(condition);
   res.status(200).json({ data: id, message: "Your user has been deleted" });
 });
-app.put("/user/:id", bodyParser.json(), (req, res) => {
+app.put("/user/:id", bodyParser.json(), async (req, res) => {
   const { id } = req.params;
-  const existingUser = USERs.find((u) => u.id == id);
-  const newUsers = USERs.filter((u) => u.id != id);
-  const updatedUser = {
-    ...req.body,
-    id: existingUser.id,
-  };
-  newUsers.push(updatedUser);
+  const payload = req.body;
+  const userObjectId = new ObjectId(id);
+  const db = await getDB();
+  const condition = { _id: userObjectId };
+  const existingUser = await db.collection("user").findOne(condition);
 
-  USERs = newUsers;
-  res.status(200).json({ data: updatedUser });
+  const newPayload = {
+    ...existingUser,
+    ...payload,
+  };
+
+  await db.collection("user").updateOne(condition, { $set: newPayload });
+  // updateMany
+
+  res.status(200).json({ data: newPayload });
 });
 
 const startServer = async () => {
