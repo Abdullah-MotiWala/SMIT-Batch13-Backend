@@ -3,8 +3,9 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const { connectDB, getDB } = require("./db");
 const { ObjectId } = require("mongodb");
-
+const { User } = require("./schema/user.schema");
 const app = express();
+
 
 const PORT = 5000;
 const HOST = "127.0.0.1";
@@ -35,10 +36,14 @@ app.post("/user", bodyParser.json(), async (req, res) => {
     const user = {
       ...req.body,
     };
-    const db = await getDB();
-    await db.collection("user").insertOne(user);
+    // const db = await getDB();
+    // await db.collection("user").insertOne(user);
     // insertMany
-    res.status(201).json({ data: user });
+    const newUser = new User(user);
+    // const createdUser = await User.create(user);
+    // console.log(newUser, "===createdUser");
+    await newUser.save();
+    res.status(201).json({ data: newUser });
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Internal Server Error" });
@@ -62,18 +67,13 @@ app.get("/user", async (req, res) => {
 });
 app.get("/user/:id", async (req, res) => {
   const { id } = req.params;
-  const userObjectId = new ObjectId(id);
-  const db = await getDB();
-  const condition = { _id: userObjectId };
-  const data = await db.collection("user").findOne(condition);
+  const data = await User.findById(id);
   res.status(200).json({ data });
 });
 app.delete("/user/:id", async (req, res) => {
   const { id } = req.params;
-  const userObjectId = new ObjectId(id);
-  const db = await getDB();
-  const condition = { _id: userObjectId };
-  await db.collection("user").deleteOne(condition);
+  const result = await User.findByIdAndDelete(id);
+  console.log(result);
   res.status(200).json({ data: id, message: "Your user has been deleted" });
 });
 app.put("/user/:id", bodyParser.json(), async (req, res) => {
