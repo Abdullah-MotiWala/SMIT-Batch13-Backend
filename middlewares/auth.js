@@ -1,7 +1,7 @@
 const { User } = require("../schema/user.schema");
 const jwt = require("jsonwebtoken");
 
-const authorization = async (req, res, next) => {
+const authGuard = async (req, res, next) => {
   try {
     const { authorization } = req.headers;
     if (!authorization) {
@@ -12,11 +12,13 @@ const authorization = async (req, res, next) => {
     const loggedInUser = await User.findById(decodedToken.id).select(
       "-password"
     );
+
     if (!loggedInUser) {
       res.status(403).send({ error: "Invalid User" });
       return;
     }
 
+    req.user = loggedInUser;
     next();
   } catch (error) {
     res.status(400).send({ error: error.message });
@@ -24,4 +26,4 @@ const authorization = async (req, res, next) => {
   }
 };
 
-module.exports = { authorization };
+module.exports = { authGuard };

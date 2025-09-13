@@ -29,11 +29,11 @@ router.post("/signup", validator(signupSchema), async (req, res) => {
   await Promise.all([
     newUser.save(),
     newOTP.save(),
-    sendEmail({
-      to: data.email,
-      subject: "Account Verification",
-      text: `Please verify your account using this OTP: ${otpCode}`,
-    }),
+    // sendEmail({
+    //   to: data.email,
+    //   subject: "Account Verification",
+    //   text: `Please verify your account using this OTP: ${otpCode}`,
+    // }),
   ]);
 
   return res

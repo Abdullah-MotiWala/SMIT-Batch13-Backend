@@ -12,6 +12,7 @@ const userSchema = new Schema(
     status: { type: Boolean, default: true },
     qualification: [{ type: { title: String }, required: true }],
     marriageYears: { type: Number, default: 0 },
+    isAdmin: Boolean,
     // createdAt:{type:Date,default:Date.now()}
   },
   { timestamps: true }
